@@ -32,25 +32,16 @@ PROTOC = protoc
 GRPC_CPP_PLUGIN = grpc_cpp_plugin
 GRPC_CPP_PLUGIN_PATH ?= `which $(GRPC_CPP_PLUGIN)`
 
-PROTOS_PATH = ../../protos
+PROTOS_PATH = .
 
 vpath %.proto $(PROTOS_PATH)
 
-all: system-check greeter_client greeter_server greeter_async_client greeter_async_client2 greeter_async_server
+all: system-check greeter_client greeter_server
 
 greeter_client: helloworld.pb.o helloworld.grpc.pb.o greeter_client.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 greeter_server: helloworld.pb.o helloworld.grpc.pb.o greeter_server.o
-	$(CXX) $^ $(LDFLAGS) -o $@
-
-greeter_async_client: helloworld.pb.o helloworld.grpc.pb.o greeter_async_client.o
-	$(CXX) $^ $(LDFLAGS) -o $@
-
-greeter_async_client2: helloworld.pb.o helloworld.grpc.pb.o greeter_async_client2.o
-	$(CXX) $^ $(LDFLAGS) -o $@
-
-greeter_async_server: helloworld.pb.o helloworld.grpc.pb.o greeter_async_server.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 .PRECIOUS: %.grpc.pb.cc
@@ -62,7 +53,7 @@ greeter_async_server: helloworld.pb.o helloworld.grpc.pb.o greeter_async_server.
 	$(PROTOC) -I $(PROTOS_PATH) --cpp_out=. $<
 
 clean:
-	rm -f *.o *.pb.cc *.pb.h greeter_client greeter_server greeter_async_client greeter_async_client2 greeter_async_server
+	rm -f *.o *.pb.cc *.pb.h greeter_client greeter_server
 
 
 # The following is to test your system and ensure a smoother experience.
