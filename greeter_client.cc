@@ -42,10 +42,11 @@ class GreeterClient {
 
   // Assembles the client's payload, sends it and presents the response back
   // from the server.
-  std::string SayHello(const std::string& user) {
+  std::string SayHello(const std::string& user, int num) {
     // Data we are sending to the server.
     HelloRequest request;
     request.set_name(user);
+    request.set_num_greetings(num);
 
     // Container for the data we expect from the server.
     HelloReply reply;
@@ -79,7 +80,7 @@ int main(int argc, char** argv) {
   GreeterClient greeter(grpc::CreateChannel(
       "localhost:50051", grpc::InsecureChannelCredentials()));
   std::string user("world");
-  std::string reply = greeter.SayHello(user);
+  std::string reply = greeter.SayHello(user, 3);
   std::cout << "Greeter received: " << reply << std::endl;
 
   return 0;

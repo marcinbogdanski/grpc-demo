@@ -40,7 +40,14 @@ using helloworld::Greeter;
 class GreeterServiceImpl final : public Greeter::Service {
   Status SayHello(ServerContext* context, const HelloRequest* request,
                   HelloReply* reply) override {
-    std::string prefix("Hello ");
+    std::string prefix("");
+    int num_greetings = request->num_greetings();
+
+    for (int i = 0; i < num_greetings; i++)
+    {
+      prefix += "Hello ";
+    }
+
     reply->set_message(prefix + request->name());
     return Status::OK;
   }
