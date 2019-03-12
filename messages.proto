@@ -35,5 +35,6 @@ message FileRequest {
 // Response stream from server to client
 message FileChunk {
   string filemd5 = 1;  // optional, MD5 for the whole file
-  bytes data = 2;
+  int32 status = 2;    // optional, 0 for success, 1 failed to open file
+  bytes data = 3;
 }

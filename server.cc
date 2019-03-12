@@ -17,6 +17,7 @@
  */
 
 #include <iostream>
+#include <fstream>
 #include <memory>
 #include <string>
 
@@ -38,12 +39,48 @@ using messages::FileServer;
 class FileServerServiceImpl final : public FileServer::Service {
   Status GetFile(ServerContext* context, const FileRequest* request,
                   ServerWriter<FileChunk>* writer) override {
-    std::string prefix("Hello ");
+    
     FileChunk reply;
 
-    for (int i = 0; i < 4; i++)
-    {
+    std::cout << "Requested file: " << request->filepath() << std::endl;
+
+    std::ifstream is(request->filepath(), std::ios::binary);
+    if(is.is_open()){
+      std::cout << "File opened successfuly" << std::endl;
+
+      is.seekg(0, is.end);
+      int filesize = is.tellg();
+      is.seekg(0, is.beg);
+
+      char* buffer = new char [filesize];
+
+      while(is.tellg() != -1){  // -1 on failure
+
+        is.read(buffer, 1024*1024);
+
+        std::cout << "gcount() " << is.gcount() << std::endl;
+        std::cout << "tellg() " << is.tellg() << std::endl;
+
+        if(is){
+          std::cout << "all read ok" << std::endl;
+        }else{
+          std::cout << "error reading" << std::endl;
+        }
+
+      }
+
+      is.close();
+      delete[] buffer;
+
+
+    }else{
+      std::cout << "Could not open file: " << request->filepath() << std::endl;
+    }
+
+    std::string prefix("Hello ");
+    for (int i = 0; i < 4; i++){
       reply.set_filemd5(prefix + request->filepath());
+      reply.set_data("ala ma kota", 5);
       writer->Write(reply);
     }
 

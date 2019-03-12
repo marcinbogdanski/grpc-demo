@@ -57,6 +57,7 @@ class FileServerClient {
 
     while(reader->Read(&reply)){
       std::cout << reply.filemd5() << std::endl;
+      std::cout << reply.data().length() << std::endl;
     }
 
 
@@ -89,7 +90,7 @@ int main(int argc, char** argv) {
   // (use of InsecureChannelCredentials()).
   FileServerClient greeter(grpc::CreateChannel(
       "localhost:50051", grpc::InsecureChannelCredentials()));
-  std::string path("/home/user/bigfile.zip");
+  std::string path("/home/user/dronex-ai_2018.09.06.zip");
   std::string reply = greeter.GetFile(path);
   std::cout << "FileServer received: " << reply << std::endl;
 
