@@ -30,17 +30,17 @@ using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::ServerWriter;
 using grpc::Status;
-using messages::HelloRequest;
-using messages::HelloReply;
-using messages::Greeter;
+using messages::FileRequest;
+using messages::FileChunk;
+using messages::FileServer;
 
 // Logic and data behind the server's behavior.
-class GreeterServiceImpl final : public Greeter::Service {
-  Status SayHello(ServerContext* context, const HelloRequest* request,
-                  ServerWriter<HelloReply>* writer) override {
+class FileServerServiceImpl final : public FileServer::Service {
+  Status GetFile(ServerContext* context, const FileRequest* request,
+                  ServerWriter<FileChunk>* writer) override {
     std::string prefix("Hello ");
     int num_greetings = request->num_greetings();
-    HelloReply reply;
+    FileChunk reply;
 
     for (int i = 0; i < num_greetings; i++)
     {
@@ -54,7 +54,7 @@ class GreeterServiceImpl final : public Greeter::Service {
 
 void RunServer() {
   std::string server_address("0.0.0.0:50051");
-  GreeterServiceImpl service;
+  FileServerServiceImpl service;
 
   ServerBuilder builder;
   // Listen on the given address without any authentication mechanism.
