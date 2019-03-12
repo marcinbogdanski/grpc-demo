@@ -1,6 +1,1 @@
-Work done so far:
-
-* copy greeter_client/_server and Makefile from grpc/examples/cpp/helloworld
-* copy helloworld.proto from grpc/examples/protos
-* hack Makefile: change protos path, remove _async_ targets
-* build, test, works ok
+This is heavily hacked __helloworld__ example from [GRCP tutorials](https://grpc.io/docs/quickstart/cpp.html).
