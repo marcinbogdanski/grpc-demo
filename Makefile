@@ -38,10 +38,10 @@ vpath %.proto $(PROTOS_PATH)
 
 all: system-check client server
 
-client: messages.pb.o messages.grpc.pb.o client.o
+client: messages.pb.o messages.grpc.pb.o client.o md5.h
 	$(CXX) $^ $(LDFLAGS) -o $@
 
-server: messages.pb.o messages.grpc.pb.o server.o
+server: messages.pb.o messages.grpc.pb.o server.o md5.h
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 .PRECIOUS: %.grpc.pb.cc

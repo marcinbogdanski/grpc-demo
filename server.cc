@@ -25,6 +25,10 @@
 
 #include "messages.grpc.pb.h"
 
+// Copied from:
+// https://bobobobo.wordpress.com/2010/10/17/md5-c-implementation/
+// and modified as per comment on LP64
+#include "md5.h"
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -39,27 +43,41 @@ using messages::FileServer;
 class FileServerServiceImpl final : public FileServer::Service {
   Status GetFile(ServerContext* context, const FileRequest* request,
                   ServerWriter<FileChunk>* writer) override {
-    
-    FileChunk reply;
 
+    const int BUFF_SIZE = 1024*1024; // 1MiB
+
+    // Debug print
     std::cout << "Requested file: " << request->filepath() << std::endl;
 
+    // Calculate MD5 sum first
+    MD5 md5;
+    char* tmp = md5.digestFile(request->filepath().c_str());
+    std::string md5str(tmp);
+    std::cout << md5str << std::endl;
+    
+    // Open file
     std::ifstream is(request->filepath(), std::ios::binary);
     if(is.is_open()){
-      std::cout << "File opened successfuly" << std::endl;
 
+      // Get file size
       is.seekg(0, is.end);
       int filesize = is.tellg();
       is.seekg(0, is.beg);
 
-      char* buffer = new char [filesize];
+      // Read-buffer
+      char* buffer = new char [BUFF_SIZE];
 
+      FileChunk reply;
+      reply.set_filemd5(md5str);     // MD5 sum,  whole file
+      reply.set_filesize(filesize);  // size in bytes, whole file
+
+      bool first = true;
       while(is.tellg() != -1){  // -1 on failure
 
-        is.read(buffer, 1024*1024);
+        is.read(buffer, BUFF_SIZE);
 
-        std::cout << "gcount() " << is.gcount() << std::endl;
-        std::cout << "tellg() " << is.tellg() << std::endl;
+        //std::cout << "gcount() " << is.gcount() << std::endl;
+        //std::cout << "tellg() " << is.tellg() << std::endl;
 
         reply.set_data(buffer, is.gcount());
         writer->Write(reply);
@@ -68,6 +86,12 @@ class FileServerServiceImpl final : public FileServer::Service {
           std::cout << "all read ok" << std::endl;
         }else{
           std::cout << "error reading" << std::endl;
+        }
+
+        if (first){
+          first = false;
+          reply.clear_filemd5();   // no need to waste bandwith
+          reply.clear_filesize();  // sending this over again (?)
         }
 
       }
@@ -79,13 +103,6 @@ class FileServerServiceImpl final : public FileServer::Service {
     }else{
       std::cout << "Could not open file: " << request->filepath() << std::endl;
     }
-
-    // std::string prefix("Hello ");
-    // for (int i = 0; i < 4; i++){
-    //   reply.set_filemd5(prefix + request->filepath());
-    //   reply.set_data("ala ma kota", 5);
-    //   writer->Write(reply);
-    // }
 
     return Status::OK;
   }

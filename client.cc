@@ -26,6 +26,12 @@
 #include "messages.grpc.pb.h"
 
 
+// Copied from:
+// https://bobobobo.wordpress.com/2010/10/17/md5-c-implementation/
+// and modified as per comment on LP64
+#include "md5.h"
+
+
 using grpc::Channel;
 using grpc::ClientContext;
 using grpc::ClientReader;
@@ -48,8 +54,7 @@ class FileServerClient {
     FileRequest request;
     request.set_filepath(remote_path);
 
-    // Container for the data we expect from the server.
-    FileChunk reply;
+
 
     // Context for the client. It could be used to convey extra information to
     // the server and/or tweak certain RPC behaviors.
@@ -58,19 +63,50 @@ class FileServerClient {
     std::unique_ptr<ClientReader<FileChunk> > reader(
       stub_->GetFile(&context, request));
 
-
-    std::ofstream os(local_path, std::ios::binary);
+    std::string temp_local_path = local_path + ".part";
+    std::ofstream os(temp_local_path, std::ios::binary);
     if(os.is_open()){
 
+      FileChunk reply;
+
+      int filesize;
+      std::string filemd5;
+
+      bool first = true;
       while(reader->Read(&reply)){
 
-        std::cout << "received: " << reply.data().length() << std::endl;
+        if (first){
+          first = false;
+          filesize = reply.filesize();  // TODO: check if enough space on HDD
+          filemd5 = reply.filemd5();
+        }
+
+        std::cout << "received: "
+        << "data len: " << reply.data().length()
+        << "filesize: " << reply.filesize()
+        << "md5: " << reply.filemd5() << std::endl;
 
         os.write(reply.data().c_str(), reply.data().length());
 
       }
 
       os.close();
+
+      // Check md5 on written file
+      MD5 md5;
+      char* tmp = md5.digestFile(temp_local_path.c_str());
+      std::string md5str(tmp);
+      std::cout << md5str << std::endl;
+      std::cout << filemd5 << std::endl;
+
+      if(filemd5 == md5str){
+        // md5 check OK on inbound file
+        std::rename(temp_local_path.c_str(), local_path.c_str());
+        std::cout << "Download completed" << std::endl;
+      }else{
+        // md5 check failed
+        std::cout << "MD5 check on inbound file failed." << std::endl;
+      }
 
 
     }else{
