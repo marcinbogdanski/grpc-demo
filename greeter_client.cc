@@ -30,6 +30,7 @@
 
 using grpc::Channel;
 using grpc::ClientContext;
+using grpc::ClientReader;
 using grpc::Status;
 using helloworld::HelloRequest;
 using helloworld::HelloReply;
@@ -55,6 +56,18 @@ class GreeterClient {
     // the server and/or tweak certain RPC behaviors.
     ClientContext context;
 
+    std::unique_ptr<ClientReader<HelloReply> > reader(
+      stub_->SayHello(&context, request));
+
+    while(reader->Read(&reply)){
+      std::cout << reply.message() << std::endl;
+    }
+
+
+
+
+
+    /*
     // The actual RPC.
     Status status = stub_->SayHello(&context, request, &reply);
 
@@ -66,6 +79,7 @@ class GreeterClient {
                 << std::endl;
       return "RPC failed";
     }
+    */
   }
 
  private:
