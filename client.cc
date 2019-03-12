@@ -40,11 +40,10 @@ class FileServerClient {
 
   // Assembles the client's payload, sends it and presents the response back
   // from the server.
-  std::string GetFile(const std::string& user, int num) {
+  std::string GetFile(const std::string& path) {
     // Data we are sending to the server.
     FileRequest request;
-    request.set_name(user);
-    request.set_num_greetings(num);
+    request.set_filepath(path);
 
     // Container for the data we expect from the server.
     FileChunk reply;
@@ -57,7 +56,7 @@ class FileServerClient {
       stub_->GetFile(&context, request));
 
     while(reader->Read(&reply)){
-      std::cout << reply.message() << std::endl;
+      std::cout << reply.filemd5() << std::endl;
     }
 
 
@@ -70,7 +69,7 @@ class FileServerClient {
 
     // Act upon its status.
     if (status.ok()) {
-      return reply.message();
+      return reply.filemd5();
     } else {
       std::cout << status.error_code() << ": " << status.error_message()
                 << std::endl;
@@ -90,8 +89,8 @@ int main(int argc, char** argv) {
   // (use of InsecureChannelCredentials()).
   FileServerClient greeter(grpc::CreateChannel(
       "localhost:50051", grpc::InsecureChannelCredentials()));
-  std::string user("world");
-  std::string reply = greeter.GetFile(user, 3);
+  std::string path("/home/user/bigfile.zip");
+  std::string reply = greeter.GetFile(path);
   std::cout << "FileServer received: " << reply << std::endl;
 
   return 0;

@@ -29,11 +29,11 @@ service FileServer {
 
 // The request message containing the user's name.
 message FileRequest {
-  string name = 1;
-  int32 num_greetings = 2;
+  string filepath = 1;
 }
 
-// The response message containing the greetings
+// Response stream from server to client
 message FileChunk {
-  string message = 1;
+  string filemd5 = 1;  // optional, MD5 for the whole file
+  bytes data = 2;
 }

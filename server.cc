@@ -39,12 +39,11 @@ class FileServerServiceImpl final : public FileServer::Service {
   Status GetFile(ServerContext* context, const FileRequest* request,
                   ServerWriter<FileChunk>* writer) override {
     std::string prefix("Hello ");
-    int num_greetings = request->num_greetings();
     FileChunk reply;
 
-    for (int i = 0; i < num_greetings; i++)
+    for (int i = 0; i < 4; i++)
     {
-      reply.set_message(prefix + request->name());
+      reply.set_filemd5(prefix + request->filepath());
       writer->Write(reply);
     }
 
