@@ -16,13 +16,17 @@
  *
  */
 
+
+/*
+ * This is heavily based on GRPC helloworld tutorial
+ */
+
 #include <iostream>
 #include <fstream>
 #include <memory>
 #include <string>
 
 #include <grpcpp/grpcpp.h>
-
 #include "messages.grpc.pb.h"
 
 // Copied from:
@@ -39,21 +43,33 @@ using messages::FileRequest;
 using messages::FileChunk;
 using messages::FileServer;
 
-// Logic and data behind the server's behavior.
+inline bool check_file_exists (const std::string& name) {
+    std::ifstream f(name.c_str());
+    return f.good();
+}
+
+// Boilerplate form helloworld grpc tutorial
 class FileServerServiceImpl final : public FileServer::Service {
   Status GetFile(ServerContext* context, const FileRequest* request,
                   ServerWriter<FileChunk>* writer) override {
 
+    // How big chunks to send over network
     const int BUFF_SIZE = 1024*1024; // 1MiB
 
-    // Debug print
-    std::cout << "Requested file: " << request->filepath() << std::endl;
+    // Print stuff
+    if(check_file_exists(request->filepath())){
+      std::cout << "Requested file: " << request->filepath() << std::endl;
+    }else{
+      std::cout << "File " << request->filepath()
+      << " does not exist :(" << std::endl;
+      return Status::CANCELLED;
+    }
 
-    // Calculate MD5 sum first
+    // Calculate MD5 sum on selected file
     MD5 md5;
     char* tmp = md5.digestFile(request->filepath().c_str());
     std::string md5str(tmp);
-    std::cout << md5str << std::endl;
+    // std::cout << md5str << std::endl;
     
     // Open file
     std::ifstream is(request->filepath(), std::ios::binary);
@@ -82,11 +98,11 @@ class FileServerServiceImpl final : public FileServer::Service {
         reply.set_data(buffer, is.gcount());
         writer->Write(reply);
 
-        if(is){
-          std::cout << "all read ok" << std::endl;
-        }else{
-          std::cout << "error reading" << std::endl;
-        }
+        // if(is){
+        //   std::cout << "all read ok" << std::endl;
+        // }else{
+        //   std::cout << "error reading" << std::endl;
+        // }
 
         if (first){
           first = false;
