@@ -22,20 +22,17 @@
 
 #include <grpcpp/grpcpp.h>
 
-#ifdef BAZEL_BUILD
-#include "examples/protos/helloworld.grpc.pb.h"
-#else
-#include "helloworld.grpc.pb.h"
-#endif
+#include "messages.grpc.pb.h"
+
 
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::ServerWriter;
 using grpc::Status;
-using helloworld::HelloRequest;
-using helloworld::HelloReply;
-using helloworld::Greeter;
+using messages::HelloRequest;
+using messages::HelloReply;
+using messages::Greeter;
 
 // Logic and data behind the server's behavior.
 class GreeterServiceImpl final : public Greeter::Service {

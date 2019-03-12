@@ -22,19 +22,16 @@
 
 #include <grpcpp/grpcpp.h>
 
-#ifdef BAZEL_BUILD
-#include "examples/protos/helloworld.grpc.pb.h"
-#else
-#include "helloworld.grpc.pb.h"
-#endif
+#include "messages.grpc.pb.h"
+
 
 using grpc::Channel;
 using grpc::ClientContext;
 using grpc::ClientReader;
 using grpc::Status;
-using helloworld::HelloRequest;
-using helloworld::HelloReply;
-using helloworld::Greeter;
+using messages::HelloRequest;
+using messages::HelloReply;
+using messages::Greeter;
 
 class GreeterClient {
  public:
