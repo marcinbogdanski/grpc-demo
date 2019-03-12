@@ -17,6 +17,7 @@
  */
 
 #include <iostream>
+#include <fstream>
 #include <memory>
 #include <string>
 
@@ -40,10 +41,12 @@ class FileServerClient {
 
   // Assembles the client's payload, sends it and presents the response back
   // from the server.
-  std::string GetFile(const std::string& path) {
+  std::string GetFile(const std::string& local_path,
+    const std::string& remote_path) {
+    
     // Data we are sending to the server.
     FileRequest request;
-    request.set_filepath(path);
+    request.set_filepath(remote_path);
 
     // Container for the data we expect from the server.
     FileChunk reply;
@@ -55,10 +58,30 @@ class FileServerClient {
     std::unique_ptr<ClientReader<FileChunk> > reader(
       stub_->GetFile(&context, request));
 
-    while(reader->Read(&reply)){
-      std::cout << reply.filemd5() << std::endl;
-      std::cout << reply.data().length() << std::endl;
+
+    std::ofstream os(local_path, std::ios::binary);
+    if(os.is_open()){
+
+      while(reader->Read(&reply)){
+
+        std::cout << "received: " << reply.data().length() << std::endl;
+
+        os.write(reply.data().c_str(), reply.data().length());
+
+      }
+
+      os.close();
+
+
+    }else{
+      std::cout << "Could not open file: " << local_path << std::endl;
     }
+
+
+    // while(reader->Read(&reply)){
+    //   std::cout << reply.filemd5() << std::endl;
+    //   std::cout << reply.data().length() << std::endl;
+    // }
 
 
 
@@ -90,8 +113,9 @@ int main(int argc, char** argv) {
   // (use of InsecureChannelCredentials()).
   FileServerClient greeter(grpc::CreateChannel(
       "localhost:50051", grpc::InsecureChannelCredentials()));
-  std::string path("/home/user/dronex-ai_2018.09.06.zip");
-  std::string reply = greeter.GetFile(path);
+  std::string local_path("temp.zip");
+  std::string remote_path("/home/user/dronex-ai_2018.09.06.zip");
+  std::string reply = greeter.GetFile(local_path, remote_path);
   std::cout << "FileServer received: " << reply << std::endl;
 
   return 0;

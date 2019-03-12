@@ -61,6 +61,9 @@ class FileServerServiceImpl final : public FileServer::Service {
         std::cout << "gcount() " << is.gcount() << std::endl;
         std::cout << "tellg() " << is.tellg() << std::endl;
 
+        reply.set_data(buffer, is.gcount());
+        writer->Write(reply);
+
         if(is){
           std::cout << "all read ok" << std::endl;
         }else{
@@ -77,12 +80,12 @@ class FileServerServiceImpl final : public FileServer::Service {
       std::cout << "Could not open file: " << request->filepath() << std::endl;
     }
 
-    std::string prefix("Hello ");
-    for (int i = 0; i < 4; i++){
-      reply.set_filemd5(prefix + request->filepath());
-      reply.set_data("ala ma kota", 5);
-      writer->Write(reply);
-    }
+    // std::string prefix("Hello ");
+    // for (int i = 0; i < 4; i++){
+    //   reply.set_filemd5(prefix + request->filepath());
+    //   reply.set_data("ala ma kota", 5);
+    //   writer->Write(reply);
+    // }
 
     return Status::OK;
   }
